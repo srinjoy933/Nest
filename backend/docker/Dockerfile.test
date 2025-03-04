@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS builder
+FROM python:3.14-rc-alpine3.21 AS builder
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -27,7 +27,7 @@ COPY static static
 COPY templates templates
 COPY tests tests
 
-FROM python:3.13-slim
+FROM python:3.14-rc-alpine3.21
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
