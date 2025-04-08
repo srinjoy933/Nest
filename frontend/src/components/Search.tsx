@@ -1,6 +1,6 @@
-import { Skeleton } from '@chakra-ui/react'
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Skeleton } from '@heroui/skeleton'
 import { debounce } from 'lodash'
 import React, { useEffect, useRef, useState, useMemo } from 'react'
 import TagManager from 'react-gtm-module'
@@ -77,7 +77,7 @@ const SearchBar: React.FC<SearchProps> = ({
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder={placeholder}
-              className="h-12 w-full rounded-lg border border-gray-300 pl-10 pr-10 text-lg text-black transition duration-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-300 dark:focus:ring-blue-300"
+              className="h-12 w-full rounded-lg border border-gray-300 pl-10 pr-10 text-lg text-black focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-300 dark:focus:ring-blue-300"
             />
             {searchQuery && (
               <button
@@ -89,7 +89,7 @@ const SearchBar: React.FC<SearchProps> = ({
             )}
           </>
         ) : (
-          <Skeleton height="48px" width="100%" borderRadius="lg" />
+          <Skeleton className="h-12 rounded-lg" />
         )}
       </div>
     </div>

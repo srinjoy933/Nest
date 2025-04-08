@@ -1,6 +1,10 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+import { heroui } from '@heroui/react'
+module.exports = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}',
+  ],
   theme: {
     extend: {
       colors: {
@@ -53,7 +57,16 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
     },
+    keyframes: {
+      scroll: {
+        '0%': { transform: 'translateX(0)' },
+        '100%': { transform: 'translateX(-500%)' },
+      },
+    },
+    animation: {
+      scroll: 'scroll 0.5s linear infinite',
+    },
   },
-  darkMode: ['class'],
-  plugins: [require('tailwindcss-animate')],
+  darkMode: 'class',
+  plugins: [heroui(), import('tailwindcss-animate')],
 }

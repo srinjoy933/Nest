@@ -1,17 +1,17 @@
-import { HStack, Link } from '@chakra-ui/react'
-import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Tooltip } from '@heroui/tooltip'
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { CardProps } from 'types/card'
 import { desktopViewMinWidth } from 'utils/constants'
 import { Icons } from 'utils/data'
-import { TooltipRecipe } from 'utils/theme'
+import { getSocialIcon } from 'utils/urlIconMappings'
 import { cn } from 'utils/utility'
 import FontAwesomeIconWrapper from 'wrappers/FontAwesomeIconWrapper'
-import ActionButton from 'components/ActionButton'
 import ContributorAvatar from 'components/ContributorAvatar'
-import DisplayIcon from 'components/DisplayIcon'
-import Markdown from 'components/MarkdownWrapper'
-import { Tooltip } from 'components/ui/tooltip'
+import ActionButton from './ActionButton'
+import DisplayIcon from './DisplayIcon'
+import Markdown from './MarkdownWrapper'
 
 // Initial check for mobile screen size
 const isMobileInitial = typeof window !== 'undefined' && window.innerWidth < desktopViewMinWidth
@@ -42,17 +42,17 @@ const Card = ({
   }, [])
 
   return (
-    <div className="mb-2 mt-4 flex w-full flex-col items-start rounded-md border border-border bg-white pb-4 pl-4 dark:bg-[#212529] md:max-w-6xl">
+    <div className="mx-auto mb-2 mt-4 flex w-full max-w-[95%] flex-col items-start rounded-md border border-border bg-white px-4 pb-4 pl-4 dark:bg-[#212529] md:max-w-6xl">
       <div className="mt-2 flex w-full flex-col items-start gap-4 pt-2 sm:flex-col sm:gap-4 md:pt-0">
         <div className="flex items-center gap-3">
           {/* Display project level badge (if available) */}
           {level && (
             <Tooltip
-              id="level-tooltip"
-              content={`${level.level} project`}
-              openDelay={100}
               closeDelay={100}
-              recipe={TooltipRecipe}
+              content={`${level.level} project`}
+              id={`level-tooltip-${title}`}
+              delay={100}
+              placement="top"
               showArrow
             >
               <span
@@ -68,7 +68,7 @@ const Card = ({
           {/* Project title and link */}
           <Link href={url} target="_blank" rel="noopener noreferrer" className="flex-1">
             <h1
-              className="max-w-full break-words text-base font-semibold dark:text-sky-600 sm:break-normal sm:text-lg lg:text-2xl"
+              className="max-w-full break-words text-base font-semibold text-blue-400 sm:break-normal sm:text-lg lg:text-2xl"
               style={{
                 transition: 'color 0.3s ease',
               }}
@@ -94,13 +94,12 @@ const Card = ({
       </div>
       {/* Link to project name if provided */}
       {projectName && (
-        <Link href={projectLink} rel="noopener noreferrer" className="mt-2 font-medium">
+        <Link href={projectLink || ''} rel="noopener noreferrer" className="mt-2 font-medium">
           {projectName}
         </Link>
       )}
       {/* Render project summary using Markdown */}
       <Markdown content={summary} className="py-2 pr-4 text-gray-600 dark:text-gray-300" />
-
       <div
         className={
           social && social.length > 0
@@ -114,6 +113,7 @@ const Card = ({
             <ContributorAvatar
               key={contributor.login || `contributor-${index}`}
               contributor={contributor}
+              uniqueKey={index.toString()}
             />
           ))}
         </div>
@@ -141,23 +141,20 @@ const Card = ({
             >
               {/* Render social links if available */}
               {social && social.length > 0 && (
-                <HStack id="social" mt={2}>
+                <div id="social" className="mt-2 flex flex-row gap-1">
                   {social.map((item) => (
                     <Link
                       key={`${item.title}-${item.url}`}
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      display="flex"
-                      alignItems="center"
-                      gap={2}
+                      className="flex items-center gap-2"
                     >
-                      <FontAwesomeIcon icon={item.icon as FontAwesomeIconProps['icon']} />
+                      <FontAwesomeIcon icon={getSocialIcon(item.url)} className="h-5 w-5" />
                     </Link>
                   ))}
-                </HStack>
+                </div>
               )}
-
               {/* Action Button */}
               <div className="flex items-center">
                 <ActionButton tooltipLabel={tooltipLabel} url={button.url} onClick={button.onclick}>

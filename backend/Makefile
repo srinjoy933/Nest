@@ -1,3 +1,8 @@
+clean-backend:
+	@rm -rf backend/.cache
+	@rm -rf backend/.local
+	@rm -rf backend/.venv
+
 exec-backend-command:
 	@docker exec -i nest-backend $(CMD)
 
@@ -22,6 +27,7 @@ enrich-data: \
 	github-enrich-issues \
 	owasp-enrich-chapters \
 	owasp-enrich-committees \
+	owasp-enrich-events \
 	owasp-enrich-projects
 
 generate-sitemap:
@@ -70,6 +76,10 @@ owasp-enrich-committees:
 	@echo "Enriching OWASP committees"
 	@CMD="python manage.py owasp_enrich_committees" $(MAKE) exec-backend-command
 
+owasp-enrich-events:
+	@echo "Enriching OWASP events"
+	@CMD="python manage.py owasp_enrich_events" $(MAKE) exec-backend-command
+
 owasp-enrich-projects:
 	@echo "Enriching OWASP projects"
 	@CMD="python manage.py owasp_enrich_projects" $(MAKE) exec-backend-command
@@ -77,6 +87,14 @@ owasp-enrich-projects:
 owasp-process-snapshots:
 	@echo "Processing OWASP snapshots"
 	@CMD="python manage.py owasp_process_snapshots" $(MAKE) exec-backend-command
+
+owasp-update-project-health-metrics:
+	@echo "Updating OWASP project health requirements"
+	@CMD="python manage.py owasp_update_project_health_metrics" $(MAKE) exec-backend-command
+
+owasp-update-project-health-requirements:
+	@echo "Updating OWASP project health metrics"
+	@CMD="python manage.py owasp_update_project_health_requirements" $(MAKE) exec-backend-command
 
 owasp-scrape-chapters:
 	@echo "Scraping OWASP site chapters data"
@@ -89,6 +107,17 @@ owasp-scrape-committees:
 owasp-scrape-projects:
 	@echo "Scraping OWASP site projects data"
 	@CMD="python manage.py owasp_scrape_projects" $(MAKE) exec-backend-command
+
+owasp-sync-posts:
+	@CMD="python manage.py owasp_sync_posts" $(MAKE) exec-backend-command-it
+
+owasp-update-events:
+	@echo "Getting OWASP events data"
+	@CMD="python manage.py owasp_update_events" $(MAKE) exec-backend-command
+
+owasp-update-sponsors:
+	@echo "Getting OWASP sponsors data"
+	@CMD="python manage.py owasp_update_sponsors" $(MAKE) exec-backend-command
 
 purge-data:
 	@CMD="python manage.py purge_data" $(MAKE) exec-backend-command
@@ -103,7 +132,7 @@ setup:
 	@CMD="python manage.py createsuperuser" $(MAKE) exec-backend-command-it
 
 shell-backend:
-	@CMD="/bin/bash" $(MAKE) exec-backend-command-it
+	@CMD="/bin/sh" $(MAKE) exec-backend-command-it
 
 sync-data: \
 	update-data \
@@ -111,8 +140,11 @@ sync-data: \
 	index-data
 
 test-backend:
-	@docker build -f backend/docker/Dockerfile.test backend -t nest-test-backend
-	@docker run -e DJANGO_CONFIGURATION=Test nest-test-backend pytest
+	@DOCKER_BUILDKIT=1 docker build \
+		--cache-from nest-test-backend \
+		-f backend/docker/Dockerfile.test backend \
+		-t nest-test-backend
+	@docker run -e DJANGO_CONFIGURATION=Test --rm nest-test-backend pytest
 
 update-backend-dependencies:
 	@CMD="poetry update" $(MAKE) exec-backend-command
@@ -123,4 +155,6 @@ update-data: \
 	owasp-scrape-committees \
 	owasp-scrape-projects \
 	github-update-project-related-repositories \
-	owasp-aggregate-projects
+	owasp-aggregate-projects \
+	owasp-update-events \
+	owasp-update-sponsors

@@ -1,48 +1,67 @@
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import Image from 'next/image'
+import Link from 'next/link'
 import { JSX } from 'react'
 import { ProjectIssuesType, ProjectReleaseType } from 'types/project'
+import { PullRequestsType } from 'types/user'
 import SecondaryCard from './SecondaryCard'
+import { TruncatedText } from './TruncatedText'
 
 const ItemCardList = ({
   title,
   data,
+  icon,
   renderDetails,
+  showAvatar = true,
 }: {
   title: string
-  data: ProjectReleaseType[] | ProjectIssuesType[]
+  data: ProjectReleaseType[] | ProjectIssuesType[] | PullRequestsType[]
+  icon?: IconProp
+  showAvatar?: boolean
   renderDetails: (item: {
     createdAt: string
     commentsCount: number
     publishedAt: string
     tagName: string
+    author: {
+      avatarUrl: string
+      login: string
+      name: string
+    }
   }) => JSX.Element
 }) => (
-  <SecondaryCard title={title}>
+  <SecondaryCard icon={icon} title={title}>
     {data && data.length > 0 ? (
-      <div className="h-64 overflow-y-auto pr-2">
+      <div className="overflow-y-auto pr-2">
         {data.map((item, index) => (
-          <div key={index} className="mb-4 rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
-            <h3 className="overflow-hidden text-ellipsis whitespace-nowrap font-semibold">
-              <a href={item?.url} className="text-blue-500 hover:underline dark:text-blue-400">
-                {item.title || item.name}
-              </a>
-            </h3>
-            <div className="flex flex-grow-0 flex-col justify-between lg:flex-row">
-              <div className="mt-2 flex items-center">
-                <div className="flex items-center">
-                  <img
-                    src={item?.author?.avatarUrl}
-                    alt={item?.author?.name}
-                    className="mr-2 h-6 w-6 rounded-full"
-                  />
-                  <a
-                    href={item?.author?.url}
-                    className="text-blue-400 hover:underline dark:text-blue-200"
+          <div key={index} className="mb-4 w-full rounded-lg bg-gray-200 p-4 dark:bg-gray-700">
+            <div className="flex w-full flex-col justify-between">
+              <div className="flex w-full items-center">
+                {showAvatar && (
+                  <Link
+                    className="flex-shrink-0 text-blue-400 hover:underline"
+                    href={`/community/users/${item?.author?.login}`}
                   >
-                    {item?.author?.name || item?.author?.login}
-                  </a>
-                </div>
+                    <Image
+                      height={24}
+                      width={24}
+                      src={item?.author?.avatarUrl}
+                      alt={item?.author?.name || ''}
+                      className="mr-2 rounded-full"
+                    />
+                  </Link>
+                )}
+                <h3 className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-semibold">
+                  <Link
+                    className="text-blue-400 hover:underline"
+                    href={item?.url || ''}
+                    target="_blank"
+                  >
+                    <TruncatedText text={item.title || item.name} />
+                  </Link>
+                </h3>
               </div>
-              <div>{renderDetails(item)}</div>
+              <div className="ml-0.5 w-full">{renderDetails(item)}</div>
             </div>
           </div>
         ))}

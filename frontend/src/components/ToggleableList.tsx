@@ -1,8 +1,8 @@
-import { Button } from '@chakra-ui/react'
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Button } from '@heroui/button'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-
 const ToggleableList = ({
   items,
   label,
@@ -13,26 +13,31 @@ const ToggleableList = ({
   limit?: number
 }) => {
   const [showAll, setShowAll] = useState(false)
+  const router = useRouter()
 
   const toggleShowAll = () => setShowAll(!showAll)
-
+  const handleButtonClick = ({ item }: { item: string }) => {
+    router.push(`/projects?q=${encodeURIComponent(item)}`)
+  }
   return (
     <div className="rounded-lg bg-gray-100 p-6 shadow-md dark:bg-gray-800">
       <h2 className="mb-4 text-2xl font-semibold">{label}</h2>
       <div className="flex flex-wrap gap-2">
         {(showAll ? items : items.slice(0, limit)).map((item, index) => (
-          <span
+          <button
             key={index}
-            className="rounded-lg border border-gray-400 px-2 py-1 text-sm dark:border-gray-300"
+            className="rounded-lg border border-gray-400 px-3 py-1 text-sm transition-all duration-200 ease-in-out hover:scale-105 hover:bg-gray-200 hover:underline dark:border-gray-300 dark:hover:bg-gray-700"
+            onClick={() => handleButtonClick({ item })}
           >
             {item}
-          </span>
+          </button>
         ))}
       </div>
       {items.length > limit && (
         <Button
-          onClick={toggleShowAll}
-          className="mt-4 flex items-center text-[#1d7bd7] hover:underline dark:text-sky-600"
+          disableAnimation
+          onPress={toggleShowAll}
+          className="mt-4 flex items-center bg-transparent text-blue-400 hover:underline"
         >
           {showAll ? (
             <>

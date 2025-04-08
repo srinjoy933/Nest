@@ -1,23 +1,31 @@
 import { useQuery } from '@apollo/client'
+import { addToast } from '@heroui/toast'
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { mockProjectDetailsData } from '@unit/data/mockProjectDetailsData'
-import { toast } from 'hooks/useToast'
-import { ProjectDetailsPage } from 'pages'
-import { useNavigate } from 'react-router-dom'
 import { render } from 'wrappers/testUtil'
-
-jest.mock('hooks/useToast', () => ({
-  toast: jest.fn(),
-}))
+import ProjectDetailsPage from 'app/projects/[projectKey]/page'
 
 jest.mock('@apollo/client', () => ({
   ...jest.requireActual('@apollo/client'),
   useQuery: jest.fn(),
 }))
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+
+jest.mock('@heroui/toast', () => ({
+  addToast: jest.fn(),
+}))
+
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  FontAwesomeIcon: () => <span data-testid="mock-icon" />,
+}))
+
+const mockRouter = {
+  push: jest.fn(),
+}
+
+jest.mock('next/navigation', () => ({
+  ...jest.requireActual('next/navigation'),
+  useRouter: jest.fn(() => mockRouter),
   useParams: () => ({ projectKey: 'test-project' }),
-  useNavigate: jest.fn(),
 }))
 
 const mockError = {
@@ -25,16 +33,12 @@ const mockError = {
 }
 
 describe('ProjectDetailsPage', () => {
-  let navigateMock: jest.Mock
-
   beforeEach(() => {
-    navigateMock = jest.fn()
     ;(useQuery as jest.Mock).mockReturnValue({
       data: mockProjectDetailsData,
       loading: false,
       error: null,
     })
-    ;(useNavigate as jest.Mock).mockImplementation(() => navigateMock)
   })
 
   afterEach(() => {
@@ -82,10 +86,13 @@ describe('ProjectDetailsPage', () => {
 
     await waitFor(() => screen.getByText('Project not found'))
     expect(screen.getByText('Project not found')).toBeInTheDocument()
-    expect(toast).toHaveBeenCalledWith({
+    expect(addToast).toHaveBeenCalledWith({
       description: 'Unable to complete the requested operation.',
       title: 'GraphQL Request Failed',
-      variant: 'destructive',
+      timeout: 3000,
+      shouldShowTimeoutProgress: true,
+      color: 'danger',
+      variant: 'solid',
     })
   })
 
@@ -121,9 +128,9 @@ describe('ProjectDetailsPage', () => {
       expect(screen.getByText('Contributor 1')).toBeInTheDocument()
     })
 
-    screen.getByText('Contributor 1').closest('p')?.click()
+    screen.getByText('Contributor 1').closest('button')?.click()
 
-    expect(navigateMock).toHaveBeenCalledWith('/community/users/contributor1')
+    expect(mockRouter.push).toHaveBeenCalledWith('/community/users/contributor1')
   })
 
   test('Recent issues are rendered correctly', async () => {
@@ -134,8 +141,6 @@ describe('ProjectDetailsPage', () => {
 
       issues.forEach((issue) => {
         expect(screen.getByText(issue.title)).toBeInTheDocument()
-
-        expect(screen.getAllByText(issue.author.name).length).toBeGreaterThan(0)
 
         expect(screen.getByText(`${issue.commentsCount} comments`)).toBeInTheDocument()
       })

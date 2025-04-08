@@ -1,15 +1,16 @@
 import { useQuery } from '@apollo/client'
 import { screen, waitFor } from '@testing-library/react'
 import { mockChapterDetailsData } from '@unit/data/mockChapterDetailsData'
-import { ChapterDetailsPage } from 'pages'
 import { render } from 'wrappers/testUtil'
-jest.mock('hooks/useToast', () => ({
-  toast: jest.fn(),
-}))
+import ChapterDetailsPage from 'app/chapters/[chapterKey]/page'
 
 jest.mock('@apollo/client', () => ({
   ...jest.requireActual('@apollo/client'),
   useQuery: jest.fn(),
+}))
+
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  FontAwesomeIcon: () => <span data-testid="mock-icon" />,
 }))
 
 jest.mock('react-router-dom', () => ({
@@ -17,6 +18,16 @@ jest.mock('react-router-dom', () => ({
   useParams: () => ({
     chapterKey: 'test-chapter',
   }),
+}))
+
+const mockRouter = {
+  push: jest.fn(),
+}
+
+jest.mock('next/navigation', () => ({
+  ...jest.requireActual('next/navigation'),
+  useRouter: jest.fn(() => mockRouter),
+  useParams: () => ({ chapterKey: 'test-chapter' }),
 }))
 
 describe('chapterDetailsPage Component', () => {
@@ -59,6 +70,7 @@ describe('chapterDetailsPage Component', () => {
 
   test('displays "No chapters found" when there are no chapters', async () => {
     ;(useQuery as jest.Mock).mockReturnValue({
+      data: { chapter: null },
       error: true,
     })
     render(<ChapterDetailsPage />)
@@ -90,7 +102,7 @@ describe('chapterDetailsPage Component', () => {
       ...mockChapterDetailsData,
       topContributors: [
         {
-          name: 'user1',
+          name: 'Contributor 1',
           avatarUrl: 'https://example.com/avatar1.jpg',
           contributionsCount: 30,
         },
@@ -103,7 +115,7 @@ describe('chapterDetailsPage Component', () => {
     render(<ChapterDetailsPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('user1')).toBeInTheDocument()
+      expect(screen.getByText('Contributor 1')).toBeInTheDocument()
     })
   })
 })
