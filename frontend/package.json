@@ -43,7 +43,7 @@
     "graphql": "^16.10.0",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "markdown-it": "^14.1.0",
     "millify": "^6.1.0",
     "react": "^19.0.0",
